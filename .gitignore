@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Sessions & database
+*.session
+*.session-journal
+*.data
+*.sqlite3
+
+# Logs & temp files
+*.log
+logs.txt
+cache/
+cache
+downloads/
+t.py
+t2.py
+config copy.py
