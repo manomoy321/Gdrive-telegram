@@ -399,7 +399,7 @@ async function loadMoreSavedMessages() {
 
     try {
         const response = await postJson('/api/getSavedMessages', {
-            limit: 40,
+            limit: 0,
             offset_id: lastOffsetId
         });
 

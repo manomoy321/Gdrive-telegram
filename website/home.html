@@ -54,11 +54,41 @@
                 <a class="unselected-item" id="nav-saved-messages" href="/?path=/saved_messages"><img src="static/assets/telegram-icon.svg" />Saved Messages</a>
                 <a class="unselected-item" id="nav-downloads" href="/?path=/downloads"><img src="static/assets/download-icon.svg" />Downloads <span id="nav-downloads-badge" class="nav-badge" style="display: none;">0</span></a>
                 <a class="unselected-item" id="nav-trash" href="/?path=/trash"><img src="static/assets/trash-icon.svg" />Trash</a>
+                <a class="unselected-item" id="nav-settings" href="javascript:void(0)"><img src="static/assets/settings-icon.svg" />Settings</a>
             </div>
         </div>
         <!-- Sidebar End -->
 
         <div id="bg-blur" class="bg-blur"></div>
+
+        <!-- Settings Modal Start -->
+        <div id="settings-modal" class="create-new-folder" style="max-width: 440px;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+                <img src="static/assets/settings-icon.svg" style="width: 20px; height: 20px;"> Download Settings
+            </span>
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin: 8px 0;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 500; color: #555; display: block; margin-bottom: 3px;">Download Folder Path (Local Server):</label>
+                    <input type="text" id="setting-download-location" placeholder="e.g. gteli" autocomplete="off" style="width: 100%; margin-top: 0;" />
+                    <small style="color: #888; font-size: 0.72rem;">Default: 'gteli' folder in project directory</small>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 500; color: #555; display: block; margin-bottom: 3px;">Parallel Downloads:</label>
+                    <input type="number" id="setting-parallel-downloads" min="1" max="20" placeholder="3" style="width: 100%; margin-top: 0;" />
+                    <small style="color: #888; font-size: 0.72rem;">Concurrent background downloads (1 - 20)</small>
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: 500; color: #555; display: block; margin-bottom: 3px;">Speed Limit (MB/s):</label>
+                    <input type="number" id="setting-speed-limit" min="0" placeholder="0" style="width: 100%; margin-top: 0;" />
+                    <small style="color: #888; font-size: 0.72rem;">0 for unlimited speed</small>
+                </div>
+            </div>
+            <div>
+                <button id="setting-cancel">Cancel</button>
+                <button id="setting-save">Save Settings</button>
+            </div>
+        </div>
+        <!-- Settings Modal End -->
 
         <!-- Create New Folder Start -->
         <div id="create-new-folder" class="create-new-folder">

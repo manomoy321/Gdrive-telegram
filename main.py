@@ -455,7 +455,7 @@ async def api_get_saved_messages(request: Request):
         return JSONResponse({"status": "no_user_session"})
     
     client = get_client(premium_required=True)
-    limit = int(data.get("limit", 40))
+    limit = int(data.get("limit", 0))  # 0 means all messages
     offset_id = int(data.get("offset_id", 0))
     
     messages = []
@@ -470,8 +470,8 @@ async def api_get_saved_messages(request: Request):
             
         async for msg in client.get_chat_history("me", **kwargs):
             last_id = msg.id
-            if msg.document or msg.video or msg.audio or msg.photo or msg.voice:
-                media = msg.document or msg.video or msg.audio or msg.photo or msg.voice
+            if msg.document or msg.video or msg.audio or msg.photo or msg.voice or msg.animation or msg.video_note:
+                media = msg.document or msg.video or msg.audio or msg.photo or msg.voice or msg.animation or msg.video_note
                 file_name = getattr(media, "file_name", None)
                 media_type = "file"
                 has_thumb = False
@@ -496,6 +496,16 @@ async def api_get_saved_messages(request: Request):
                     has_thumb = False
                     if not file_name:
                         file_name = f"voice_{msg.id}.ogg"
+                elif msg.animation:
+                    media_type = "animation"
+                    has_thumb = bool(getattr(msg.animation, "thumbs", None))
+                    if not file_name:
+                        file_name = f"animation_{msg.id}.mp4"
+                elif msg.video_note:
+                    media_type = "video_note"
+                    has_thumb = bool(getattr(msg.video_note, "thumbs", None))
+                    if not file_name:
+                        file_name = f"video_note_{msg.id}.mp4"
                 else:
                     has_thumb = bool(getattr(msg.document, "thumbs", None))
                     if not file_name:
@@ -510,7 +520,7 @@ async def api_get_saved_messages(request: Request):
                     "size": getattr(media, "file_size", 0) or 0
                 })
                 count += 1
-                if count >= limit:
+                if limit > 0 and count >= limit:
                     has_more = True
                     break
                 
@@ -518,7 +528,8 @@ async def api_get_saved_messages(request: Request):
             "status": "ok",
             "messages": messages,
             "has_more": has_more,
-            "last_id": last_id
+            "last_id": last_id,
+            "total_count": len(messages)
         })
     except Exception as e:
         import traceback
@@ -672,7 +683,6 @@ async def api_start_background_download(request: Request):
     if len(premium_clients) == 0:
         return JSONResponse({"status": "error", "message": "No user session available"})
         
-    client = get_client(premium_required=True)
     msg_ids = data.get("msg_ids", [])
     names = data.get("names", [])
     sizes = data.get("sizes", [])
@@ -682,6 +692,7 @@ async def api_start_background_download(request: Request):
             name = names[i] if i < len(names) else f"file_{msg_id}"
             size = sizes[i] if i < len(sizes) else 0
             
+            client = get_client(premium_required=True)
             asyncio.create_task(
                 download_file_background(client, msg_id, name, size)
             )
@@ -841,14 +852,14 @@ async def api_update_settings(request: Request):
     if data.get("password") != ADMIN_PASSWORD:
         return JSONResponse({"status": "Invalid password"})
         
-    from utils.settings import save_settings
+    from utils.settings import save_settings, get_settings
     from utils.tg_downloader import update_semaphore
     
     settings = data.get("settings", {})
     if save_settings(settings):
         if "parallel_downloads" in settings:
             update_semaphore(int(settings["parallel_downloads"]))
-        return JSONResponse({"status": "ok"})
+        return JSONResponse({"status": "ok", "settings": get_settings()})
     return JSONResponse({"status": "error", "message": "Failed to save settings"})
 
 

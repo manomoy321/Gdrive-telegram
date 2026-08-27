@@ -104,10 +104,10 @@ async function loadSavedMessagesView() {
     if (gridContainer) gridContainer.innerHTML = loadingHtml;
 
     lastOffsetId = 0;
-    hasMoreMessages = true;
+    hasMoreMessages = false;
 
     try {
-        const response = await postJson('/api/getSavedMessages', { limit: 40, offset_id: 0 });
+        const response = await postJson('/api/getSavedMessages', { limit: 0, offset_id: 0 });
         if (response.status === 'ok') {
             lastOffsetId = response.last_id || 0;
             hasMoreMessages = response.has_more || false;
@@ -331,6 +331,11 @@ async function updateDownloadsUI() {
                             `}
                         </div>
                     </div>
+                    ${t.error_msg ? `
+                    <div style="padding: 6px 14px; background: #fce8e6; color: #c5221f; border-radius: 6px; margin: 8px 14px; font-size: 0.8rem; word-break: break-all;">
+                        <strong>Error:</strong> ${t.error_msg}
+                    </div>
+                    ` : ''}
                 </div>
                 `;
             }
@@ -396,6 +401,80 @@ setInterval(async () => {
         }
     } catch { }
 }, 4000);
+
+// Settings Modal Handlers
+async function openSettingsModal() {
+    const bgBlur = document.getElementById('bg-blur');
+    const settingsModal = document.getElementById('settings-modal');
+    if (!settingsModal) return;
+
+    try {
+        const res = await postJson('/api/getSettings', {});
+        if (res.status === 'ok' && res.settings) {
+            document.getElementById('setting-download-location').value = res.settings.download_location || 'gteli';
+            document.getElementById('setting-parallel-downloads').value = res.settings.parallel_downloads || 3;
+            document.getElementById('setting-speed-limit').value = res.settings.speed_limit || 0;
+        }
+    } catch (err) {
+        console.error('Error fetching settings:', err);
+    }
+
+    bgBlur.style.zIndex = '2';
+    bgBlur.style.opacity = '0.1';
+    settingsModal.style.zIndex = '3';
+    settingsModal.style.opacity = '1';
+    settingsModal.style.display = 'flex';
+}
+
+function closeSettingsModal() {
+    const bgBlur = document.getElementById('bg-blur');
+    const settingsModal = document.getElementById('settings-modal');
+    if (!settingsModal) return;
+
+    bgBlur.style.opacity = '0';
+    setTimeout(() => { bgBlur.style.zIndex = '-1'; }, 300);
+    settingsModal.style.opacity = '0';
+    setTimeout(() => {
+        settingsModal.style.zIndex = '-1';
+        settingsModal.style.display = 'none';
+    }, 300);
+}
+
+async function saveDownloadSettings() {
+    const dlLoc = document.getElementById('setting-download-location').value.trim();
+    const parallel = parseInt(document.getElementById('setting-parallel-downloads').value) || 3;
+    const speed = parseInt(document.getElementById('setting-speed-limit').value) || 0;
+
+    const saveBtn = document.getElementById('setting-save');
+    const originalText = saveBtn.innerText;
+    saveBtn.innerText = 'Saving...';
+    saveBtn.disabled = true;
+
+    try {
+        const res = await postJson('/api/updateSettings', {
+            settings: {
+                download_location: dlLoc || 'gteli',
+                parallel_downloads: Math.max(1, Math.min(20, parallel)),
+                speed_limit: Math.max(0, speed)
+            }
+        });
+
+        if (res.status === 'ok') {
+            if (res.settings) {
+                document.getElementById('setting-download-location').value = res.settings.download_location || dlLoc;
+            }
+            alert('Settings saved successfully!');
+            closeSettingsModal();
+        } else {
+            alert('Error saving settings: ' + (res.message || res.status));
+        }
+    } catch (err) {
+        alert('Failed to save settings: ' + err);
+    } finally {
+        saveBtn.innerText = originalText;
+        saveBtn.disabled = false;
+    }
+}
 
 async function createNewFolder() {
     const folderName = document.getElementById('new-folder-name').value;

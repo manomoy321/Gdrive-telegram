@@ -100,3 +100,23 @@ document.getElementById('remote-cancel').addEventListener('click', () => {
 document.getElementById('remote-start').addEventListener('click', Start_URL_Upload);
 
 // New Url Upload End
+
+// Settings Modal Start
+const navSettingsBtn = document.getElementById('nav-settings');
+if (navSettingsBtn) {
+    navSettingsBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await openSettingsModal();
+    });
+}
+
+const settingCancelBtn = document.getElementById('setting-cancel');
+if (settingCancelBtn) {
+    settingCancelBtn.addEventListener('click', closeSettingsModal);
+}
+
+const settingSaveBtn = document.getElementById('setting-save');
+if (settingSaveBtn) {
+    settingSaveBtn.addEventListener('click', saveDownloadSettings);
+}
+// Settings Modal End

@@ -61,12 +61,20 @@ import shutil
 
 def reset_cache_dir():
     cache_dir = Path("./cache")
-    downloads_dir = Path("./downloads")
     shutil.rmtree(cache_dir, ignore_errors=True)
-    shutil.rmtree(downloads_dir, ignore_errors=True)
     cache_dir.mkdir(parents=True, exist_ok=True)
-    downloads_dir.mkdir(parents=True, exist_ok=True)
-    logger.info("Cache and downloads directory reset")
+    
+    # Ensure gteli download directory exists without deleting user downloads
+    from utils.settings import get_settings
+    try:
+        settings = get_settings()
+        dl_dir = settings.get("download_location") or os.path.abspath("gteli")
+        Path(dl_dir).mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        Path("./gteli").mkdir(parents=True, exist_ok=True)
+        
+    logger.info("Cache directory reset and download directory initialized")
+
 
 
 def parse_content_disposition(content_disposition):

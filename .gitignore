@@ -26,6 +26,8 @@ logs.txt
 cache/
 cache
 downloads/
+gteli/
+settings.json
 t.py
 t2.py
 config copy.py
